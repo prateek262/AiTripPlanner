@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Trip Planner Prototype</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #response { background-color: #f0f0f0; padding: 15px; border-radius: 8px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <h1>AI Personalized Trip Planner</h1>
+    <form id="plannerForm">
+        <label for="destination">Destination:</label><br>
+        <input type="text" id="destination" value="Udaipur" required><br><br>
+        <label for="budget">Budget (INR):</label><br>
+        <input type="number" id="budget" value="20000" required><br><br>
+        <label for="days">Number of Days:</label><br>
+        <input type="number" id="days" value="3" required><br><br>
+        <label for="interests">Interests (e.g., history, food, adventure):</label><br>
+        <input type="text" id="interests" value="royal palaces, local food, boat rides" required><br><br>
+        <button type="submit">Generate Itinerary</button>
+    </form>
+
+    <h2>Your Personalized Itinerary:</h2>
+    <div id="loading" style="display:none;">Generating... please wait.</div>
+    <pre id="response"></pre>
+
+    <script>
+        const form = document.getElementById('plannerForm');
+        const responseDiv = document.getElementById('response');
+        const loadingDiv = document.getElementById('loading');
+        // IMPORTANT: Replace with your actual deployed Cloud Function URL
+        const CLOUD_FUNCTION_URL = 'YOUR_CLOUD_FUNCTION_URL';
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            responseDiv.textContent = '';
+            loadingDiv.style.display = 'block';
+
+            const data = {
+                destination: document.getElementById('destination').value,
+                budget: document.getElementById('budget').value,
+                days: document.getElementById('days').value,
+                interests: document.getElementById('interests').value,
+            };
+
+            try {
+                const response = await fetch(CLOUD_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data),
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                responseDiv.textContent = JSON.stringify(result, null, 2);
+
+            } catch (error) {
+                responseDiv.textContent = 'Error: ' + error.message;
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
